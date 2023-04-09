@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use \Illuminate\Database\Eloquent\Collection;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -18,21 +19,49 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-            'remember_token' => Str::random(10),
+            'name' => $this->faker->name(),
+            's_name' => $this->faker->lastName(),
+            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'job_title' => $this->faker->jobTitle(),
+            'notes' => $this->faker->text(300),
+            'boss_id' => $this->faker->randomElement(User::all())
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function configure(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->afterCreating(function (User $user) {
+            $users = User::all();
+            if ($users->count() > 1) {
+                $user->boss_id = $this->getRandomParent($user, $users)?->id;
+                $user->save();
+            }
+        });
+    }
+
+    private function getRandomParent(User $user, Collection $users): ?User
+    {
+        for($i = 1; $i < 5; $i++) {
+            $boss = $users->random(1)->first();
+            if ($this->canBeBoss($boss, $user)) {
+                return $boss;
+            }
+        }
+
+        return null;
+    }
+
+    private function canBeBoss(User $boss, User $user): bool
+    {
+        if ($boss->id === $user->id) {
+            return false;
+        }
+
+        if ($boss->boss_id === null) {
+            return true;
+        }
+
+        return $this->canBeBoss($boss->boss, $user);
     }
 }
