@@ -25,7 +25,6 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'job_title' => $this->faker->jobTitle(),
             'notes' => $this->faker->text(300),
-            'boss_id' => $this->faker->randomElement(User::all())
         ];
     }
 
@@ -34,13 +33,13 @@ class UserFactory extends Factory
         return $this->afterCreating(function (User $user) {
             $users = User::all();
             if ($users->count() > 1) {
-                $user->boss_id = $this->getRandomParent($user, $users)?->id;
+                $user->boss_id = $this->getRandomBoss($user, $users)?->id;
                 $user->save();
             }
         });
     }
 
-    private function getRandomParent(User $user, Collection $users): ?User
+    private function getRandomBoss(User $user, Collection $users): ?User
     {
         for($i = 1; $i < 5; $i++) {
             $boss = $users->random(1)->first();
@@ -52,6 +51,12 @@ class UserFactory extends Factory
         return null;
     }
 
+    /**
+     * Начальник не может быть подчиненным своего подчиненного или подчиненным подчиненного.
+     * @param User $boss
+     * @param User $user
+     * @return bool
+     */
     private function canBeBoss(User $boss, User $user): bool
     {
         if ($boss->id === $user->id) {
