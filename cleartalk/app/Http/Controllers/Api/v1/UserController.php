@@ -38,7 +38,8 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $user = DB::table('users')->where('id', '=', $id)->first();
+        return response(compact('user'), $user ? 200 : 404);
     }
 
     /**

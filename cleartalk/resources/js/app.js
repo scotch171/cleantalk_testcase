@@ -16,10 +16,13 @@ import { createApp } from 'vue';
 const app = createApp({});
 
 import ExampleComponent from './components/ExampleComponent.vue';
-app.component('example-component', ExampleComponent);
-
+import EditUser from "./components/EditUser.vue";
 import TreeView from "./components/TreeView.vue";
+
+
+app.component('example-component', ExampleComponent);
 app.component('tree-view', TreeView);
+app.component('edit-user', EditUser);
 
 /**
  * The following block of code may be used to automatically register your

@@ -5,3 +5,4 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/slaves', [UserController::class, 'getSlaves']);
+Route::resource('users',UserController::class);
